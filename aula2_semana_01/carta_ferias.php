@@ -49,9 +49,11 @@
     /*  
         ........
         .......
-    */
+    */ 
 
     if (isset($_POST['name']) &&  isset($_POST['start_date']) && isset($_POST['end_date'])) {
+
+        $salario = $name === 'douglas' ? 10000 : 1000; 
 
         $name = $_POST['name'];
         $start_date = $_POST['start_date'];
