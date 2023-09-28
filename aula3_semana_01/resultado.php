@@ -1,16 +1,18 @@
 <?php
-  $peso = filter_input(INPUT_POST, 'peso', FILTER_VALIDATE_FLOAT);
-  $distancia = filter_input(INPUT_POST, 'distancia', FILTER_VALIDATE_FLOAT);
-  
-  if(!$peso || !$distancia) {
-    header('Location: frete.php?error=true');
-  }
+define("TAXA_PESO", 0.8);
+define("TAXA_DISTANCIA",  0.2);
 
-  // var_dump($peso);
-  
-  $distancia = $_POST['distancia'];
+$peso = filter_input(INPUT_POST, 'peso', FILTER_VALIDATE_FLOAT);
+$distancia = filter_input(INPUT_POST, 'distancia', FILTER_VALIDATE_FLOAT);
 
-  $resultado = $peso * 0.8 + $distancia * 0.2;
+if (!$peso || !$distancia) {
+  header('Location: frete.php?error=true');
+}
 
-  echo "O valor do frete é $resultado";
-?>
+// var_dump($peso);
+
+$distancia = $_POST['distancia'];
+
+$resultado = $peso * TAXA_PESO + $distancia * TAXA_DISTANCIA;
+
+echo "O valor do frete é $resultado";
