@@ -8,58 +8,75 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-if($method === 'POST') {
+if ($method === 'POST') {
 
     $body = file_get_contents("php://input"); // body em formato de string
-    $data = json_decode($body); 
-  
+    $data = json_decode($body); // converte para um array php
+
     $nome = filter_var($data->nome, FILTER_SANITIZE_SPECIAL_CHARS);
     $idade = filter_var($data->idade, FILTER_VALIDATE_INT);
     $curso = filter_var($data->curso, FILTER_SANITIZE_SPECIAL_CHARS);
     $valor = filter_var($data->valor, FILTER_VALIDATE_FLOAT);
     $prazo = filter_var($data->prazo, FILTER_VALIDATE_INT);
 
-    if(!$nome) {
+    if (!$nome) {
         http_response_code(400);
         echo json_encode(['error' => 'nome é obrigatório']);
         exit;
     }
 
-    if(!$idade) {
+    if (!$idade) {
         http_response_code(400);
         echo json_encode(['error' => 'idade é obrigatório']);
         exit;
     }
 
-    if(!$curso) {
+    if (!$curso) {
         http_response_code(400);
         echo json_encode(['error' => 'curso é obrigatório']);
         exit;
     }
 
-    if(!$valor) {
+    if (!$valor) {
         http_response_code(400);
         echo json_encode(['error' => 'valor é obrigatório']);
         exit;
     }
 
-    if(!$prazo) {
+    if (!$prazo) {
         http_response_code(400);
         echo json_encode(['error' => 'prazo é obrigatório']);
         exit;
     }
 
-    $taxa = TAXA / 100;
+    if ($idade < 18) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Não permitido empréstimo para menor de idade.']);
+        exit;
+    }
 
-    $juros = $valor * $taxa * $prazo; // JUROS
-    
+    $taxa = ($idade < 25) ? 0.01 : TAXA / 100; // taxa de decimal
+    $juros = $valor * $taxa * $prazo; // CALCULA JUROS SIMPLES
     $montante = $valor + $juros;
-
     $parcela = $montante / $prazo;
 
+    if(file_exists("$nome.txt")) {
+        http_response_code(409);
+        echo json_encode(['error' => 'Já existe um emprestimo em seu nome']);
+        exit;
+    }
+
+    file_put_contents("$nome.txt", "Nome: $nome \nIdade: $idade \nJuros: $juros \nParcela: $parcela");
+    
+    http_response_code(201);
     echo json_encode([
-        'juros' => $juros,
-        'montante' => $montante,
-        'parcela' => number_format($parcela, 2)
+        'nome' => $nome,
+        'juros do emprestimo' => number_format($juros, 2),
+        'Valor total' => number_format($montante, 2),
+        'parcela mensal' => number_format($parcela, 2)
     ]);
+
+} else {
+    http_response_code(404);
+    echo json_encode(['message' => 'Essa operação não é permitida']);
 }
